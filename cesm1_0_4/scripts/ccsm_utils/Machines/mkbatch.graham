@@ -1,0 +1,91 @@
+#! /bin/csh -f
+
+set mach = graham
+
+#################################################################################
+if ($PHASE == set_batch) then
+#################################################################################
+
+source ./Tools/ccsm_getenv || exit -1
+
+set ntasks  = `${UTILROOT}/Tools/taskmaker.pl -sumonly`
+set maxthrds = `${UTILROOT}/Tools/taskmaker.pl -maxthrds`
+@ nodes = $ntasks / ${MAX_TASKS_PER_NODE}
+if ( $ntasks % ${MAX_TASKS_PER_NODE} > 0) then
+  @ nodes = $nodes + 1
+  @ ntasks = $nodes * ${MAX_TASKS_PER_NODE}
+endif
+@ taskpernode = ${MAX_TASKS_PER_NODE} / ${maxthrds}
+set qname = batch
+set tlimit = "00:59:00"
+
+#--- Job name is first fifteen characters of case name ---
+set jobname = `echo ${CASE} | cut -c1-15`
+
+cat >! $CASEROOT/${CASE}.${mach}.run << EOF1
+#!/bin/csh -f
+
+#SBATCH --job-name=${CASE}
+#SBATCH --time=$tlimit
+#SBATCH --nodes=$nodes
+#SBATCH --ntasks-per-node=6
+##SBATCH --cpus-per-task=$maxthrds
+##SBATCH --exclusive
+##SBATCH --mem=120000M
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=guido@atmosp.physics.utoronto.ca
+#SBATCH --output=slurm.out.%j
+
+
+EOF1
+
+#################################################################################
+else if ($PHASE == set_exe) then
+#################################################################################
+
+set maxthrds = `${UTILROOT}/Tools/taskmaker.pl -maxthrds`
+set maxtasks = `${UTILROOT}/Tools/taskmaker.pl -sumtasks`
+
+cat >> ${CASEROOT}/${CASE}.${MACH}.run << EOF1
+# -------------------------------------------------------------------------
+# Run the model
+# -------------------------------------------------------------------------
+
+cd \$RUNDIR
+echo "\`date\` -- CSM EXECUTION BEGINS HERE"
+
+#===============================================================================
+# GENERIC_USER
+# Launch the job here.  Some samples are commented out below
+#===============================================================================
+
+setenv OMP_NUM_THREADS ${maxthrds}
+setenv I_MPI_SHM_LMT shm
+srun --mpi=pmi2 --ntasks=${maxtasks} --cpu_bind=sockets --cpu_bind=verbose --kill-on-bad-exit ./ccsm.exe >&! ccsm.log.\$LID
+
+wait
+echo "\`date\` -- CSM EXECUTION HAS FINISHED"
+
+EOF1
+
+
+#################################################################################
+else if ($PHASE == set_larch) then
+#################################################################################
+
+
+   #This is a place holder for a long-term archiving script
+
+
+#################################################################################
+else
+#################################################################################
+
+    echo "mkscripts.$mach"
+    echo "  PHASE setting of $PHASE is not an accepted value"
+    echo "  accepted values are set_batch, set_exe and set_larch"
+    exit 1
+
+#################################################################################
+endif
+#################################################################################

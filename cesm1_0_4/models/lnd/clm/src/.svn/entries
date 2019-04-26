@@ -1,0 +1,49 @@
+10
+
+dir
+92
+https://svn-ccsm-release.cgd.ucar.edu/model_versions/cesm1_0_4/models/lnd/clm/src
+https://svn-ccsm-release.cgd.ucar.edu
+
+
+
+2012-02-14T17:10:09.055059Z
+92
+fischer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6ec7379f-1bbc-4938-b9b9-58fa9e6a5fe1
+
+cpl_share
+dir
+
+biogeochem
+dir
+
+cpl_mct
+dir
+
+main
+dir
+
+riverroute
+dir
+
+biogeophys
+dir
+
+cpl_esmf
+dir
+

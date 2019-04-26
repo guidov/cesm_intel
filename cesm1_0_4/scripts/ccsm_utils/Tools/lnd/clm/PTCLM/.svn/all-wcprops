@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM
+END
+PTCLM.py
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/PTCLM.py
+END
+ChangeLog
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/ChangeLog
+END
+testcases.csh
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/testcases.csh
+END
+KnownBugs
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/KnownBugs
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/README
+END

@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files
+END
+horiz_grid.xml
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/horiz_grid.xml
+END
+defaults_waccm.xml
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/defaults_waccm.xml
+END
+defaults_fv.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/defaults_fv.xml
+END
+sys_defaults.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/sys_defaults.xml
+END
+definition.xml
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/definition.xml
+END
+defaults_sld.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/defaults_sld.xml
+END
+defaults_waccmx.xml
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/defaults_waccmx.xml
+END
+defaults_eul.xml
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/defaults_eul.xml
+END
+defaults_homme.xml
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/defaults_homme.xml
+END
+definition.xsl
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/bld/config_files/definition.xsl
+END

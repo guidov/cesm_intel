@@ -1,0 +1,815 @@
+================================================================================
+SVN $URL: https://svn-ccsm-release.cgd.ucar.edu/model_versions/cesm1_0_4 $
+================================================================================
+Tag name: cesm1_0_4
+Originator(s): cseg
+Date: Mon Feb 13 2012
+One-line Summary: Fourth update to the cesm1.0 release code.
+
+The main purpose of the CESM1.0.4 release is to provide the community a version 
+of CESM1 that supports the Thermosphere/Ionosphere extension of WACCM (WACCMX) 
+and the capability to configure cases using interannual forcing component sets 
+(CIAF, DIAF, and GIAF). CESM1.0.4 also includes a "patch" to MPI_RSEND that 
+improves cray-gemini interconnect performance on Cray XT6 machines, and it 
+contains other enhancements, machine updates, and bug fixes, as noted in this 
+section. Aside from these new features, the CESM1.0.4 release is an incremental 
+release beyond CESM1.0.3.
+
+
+Answer-Changing Features in CESM1_0_4
+
+The following changes in the cesm1_0_4 tag will result in most cases not 
+producing bit-for-bit results when compared with cesm1_0_3.
+
+
+  * CAM (Active Atmosphere Model)
+
+     o Climate-preserving changes:
+          WACCM:
+
+        + Two bugs were fixed that affect model calculations. First, the 
+	  incorrect variable had been passed into the gravity wave calculation 
+	  as the molecular diffusion coefficient. Second, the diffusion solver 
+	  was using the wrong value as molecular diffusion at the lowest level 
+	  at which molecular diffusion is turned on (0.55 hPa, ~53 km). The 
+	  correction of these two bugs produces significant answer changes above 
+	  100 km, where molecular diffusion is most significant. In particular, 
+	  increases in CO2 are significant in the global average above 100 km, 
+	  with changes increasing with altitude. Additionally, global average 
+	  temperature decreases significantly between 100 and 120 km, and 
+	  increases significantly above 120 km.
+
+        + A third bug was fixed to correct the output values of EKGWSPEC, the 
+	  effective Kzz diffusion coefficient due to the gravity wave spectrum, 
+	  which were low by a factor of 2. This bug fix affects only model output 
+	  for this variable, as the correct value of the diffusion coefficient was
+	  being used in model calculations prior to the bug fix.
+
+  * CLM (Active Land Model)
+
+     o Climate-preserving changes:
+         + The domain and fraction datasets were made to be consistent so answers for 
+   	   the following I compset resolutions change: T85_T85, T42_T42, T31_T31, 
+	   f10_f10, f45_45, f19_f19, f09_f09, f05_f05, and f02_f02.
+         + Dust wet/dry deposition was mislabeled for bin 4. This changes the 
+	   coupler history fields and sometimes has a small impact on this DUSTDEP 
+	   history field in CLM. 
+     o Non-climate-preserving changes:
+         + Answers for the default I1850SPINUPCN compset changes as the MOAR forcing 
+	   dataset driving this compset were changed to an appropriate 1850 spinup 
+	   case.
+         + The history variables: CISUN, CISHA, ALPHAPSNSUN, and ALPHAPSNSHA were 
+	   fixed rather than writing out gdir.
+         + The soil data for PTCLM US-UMB site was corrected.
+         + A bug in the datm forcing setting for CLM1PT mode was fixed so that it 
+	   runs in "cycle" mode rather than extrapolating when beyond the available 
+	   data. This problem caused simulations to be worthless. 
+
+
+  * dice (Data Ice Model)
+
+     o Climate-preserving changes:
+         + bug fix for flux_Qacc -- changes answers for cases using C-type 
+	   compsets.
+	    
+  * Scripts
+
+     o Non-climate-preserving changes:
+         + A bugfix was applied to the compset definitions for the following 
+	   compsets: E_2000_CN_GLC, E_1850_CN_GLC, F_AMIP_CAM5_CN, F_1850_CN_GLC.
+	   In each of these compsets, CN should have been activated, but it was 
+           not.
+
+  Directly below is a summary of compsets that are affected by changes in 
+  cesm1_0_4; details can be found in the sections that follow.
+
+    WACCM compsets (see CAM/WACCM)
+    E_2000_CN_GLC, E_1850_CN_GLC, F_AMIP_CAM5_CN, F_1850_CN_GLC (see Scripts)
+    I compsets, using any of the following domains: T85_T85, T42_T42, T31_T31, 
+    f10_f10, f45_45, f19_f19, f09_f09, f05_f05, f02_f02 (see CLM)
+    A,C,G,D and I compsets (see "bin 4" discussion in CLM)
+    C compsets (see dice) 
+
+
+
+What's New in CESM1_0_4
+
+  * CAM (Active Atmosphere Model)
+      o New features in CAM5.1.1
+          + Added WACCM-X. WACCM-X is the extension of WACCM/CAM from the lower 
+	    thermosphere to the top of the thermosphere.
+          + COSP updates. Included changes are:
+              . made several high-level namelist variables that control COSP. The new 
+	        options are all meant to reduce cost by running with fewer subcolumns 
+		(10) and by only running cosp every 3rd time the radiation is run. The 
+		new variables are:
+                cosp_amwg
+                cosp_lite
+                cosp_passive
+                cosp_active
+                cosp_isccp
+              . change the default mode from cosp_runall to cosp_amwg. Add cosp_runall 
+	        to the namelist so this mode can still be specified.
+              . changed default for cosp_histfile_num from '2' to '1'.
+              . changed sub-column outputs to avoid crashes when you specify outputs as
+	        'A' on a monthly history file. The subcolumn output is only on by 
+		default when explicitly requested via setting either 
+		cosp_lfrac_out=.true. or cosp_runall=.true.
+              . made COSP compatible with fincl1lonlat -- so that you can run COSP and 
+	        save COSP outputs locally.
+              . Add checks to keep rain_cv and snow_cv above 0.0
+              . Fixed restart bug.
+      o Code cleanup and refactoring
+          + A reference pressure module has been added and remaining references in the 
+	    physics package to the hybrid vertical coordinates have been removed. The 
+	    physics package should only need information about the pressures at layer 
+	    midpoints and interfaces. It should not depend in any way on the vertical 
+	    coordinate used by the dynamical core.
+          + The prescribed aerosol data modules were extended to be able to read in 
+	    modal aerosol concentrations and aerosol deposition fluxes. This was done 
+	    to facilitate development of prescribed Modal Aerosol Model configurations 
+	    (in progress).
+          + Code refactored for memory reduction in chemistry/mozart/mo_drydep.F90 and 
+	    physics/cam/radae.F90
+          + Removed CAM specific print_memusage messages
+          + CAM build system checks for the existence of a netcdff library
+          + mkDepends was modified to relax the restrictions on source file name 
+	    matching module name, and only one module per source file.
+          + For WACCM-SC, removed QTHERMAL, QRS_AUR, QRS_CO2NIR, QRS_EUV, from the 
+	    output files.
+      o Bugs fixed
+          + Bug fix to pass the correct variable for the molecular diffusion coefficient
+	    to the WACCM gravity wave routine.
+          + Bug fix to use the correct values of molecular diffusion coefficient in the 
+	    vertical diffusion solver at the lowest level at which molecular diffusion is
+	    turned on (0.55 hPa) in WACCM.
+          + Bug fix to correct the output values of EKGWSPEC, the effective Kzz 
+	    diffusion coefficient due to the gravity wave spectrum, which were low by 
+	    exactly a factor of 2 in WACCM history output.
+          + Bug fix to make restart history files double precision.
+          + Fixed a restart problem that occurs when empty_htapes=.true. in some 
+	    configurations. Seems to be a problem that occurs with multiple history file 
+	    output.
+          + Correction to local-time averaged history output.
+          + Correction to sathist output of dynamics decomposed variables on the HOMME 
+	    grid.
+          + Bug fixed for column data using the collect_column_output option when the 
+	    same number of columns (but different locations) was used on multiple history 
+	    files.
+          + Work around for mpi_rsend bug on the Gemini interconnect. The Gemini 
+	    interconnect has a performance bug for mpi_rsend and mpi_irsend. CPP flag 
+	    _NO_MPI_RSEND was added so that MPI_RSEND and MPI_IRSEND can be redefined 
+	    to MPI_SEND. _NO_MPI_RSEND is only set within the CESM scripts.
+          + Added correction to O3 chemical loss rate diagnostic.
+          + Bugfix for the diagnostic output fields CLDLIQSTR and CLDICESTR. The 
+	    previous version was based on state values that did not contain the 
+	    tendencies from the macrophysics package.
+          + Allocate statement in mo_drydep.F90 not used and was removed. It could have 
+	    caused problems with UNSTRUCTURED grids since the nlon_veg and nlat_veg 
+	    variables are not defined in that case.
+          + Fixed timers in tphysbc.F90 and macrop_driver.F90
+
+  * CICE (Active Ice Model)
+      o Supports Gregorian calendar.
+
+  * CLM (Active Land Model) (See CLM User's Guide for details of all the following)
+      o The only changes were bugs fixes to CESM1.0.3 as follows
+          + A couple issues with CNDV were resolved.
+          + A issue with the configure step where it would hang with a bad user_nl_clm 
+	    file was fixed.
+          + A few issues with history variables was fixed.
+          + We fixed it so that you could build with C13 on bluefire.
+          + Domain files and fraction files were made to be consistent.
+          + A problem with Gregorian input was fixed.
+          + Several issues with PTCLM were fixed.
+          + Monthly average files are no longer required to be one per month.
+          + CLM1PT mode was changed to "cycle" mode by default so that simulations 
+	    running beyond the valid data range would NOT be invalidated.
+          + A couple problems with PIO were fixed.
+          + The I1850SPINUPCN was changed to point to an appropriate 1850 case rather 
+	    than a transient case. 
+
+  * POP2 (Active Ocean Model)
+      o Minor changes and bugfixes:
+          + New default setting for the output restart file format. By default, POP2 
+	    restart files are now written in netCDF format. This change was made in 
+	    order to preserve b4b restarts on some machines. Note that POP2 cases can 
+	    restart from an existing binary restart file, regardless of the format 
+	    selected for new output restart files. The POP2 scripts will automatically 
+	    detect the format of the old restart file and read it accordingly.
+          + Correction to the units for the time-averaged quantity TPOWER.
+          + Bugfix for gfortran format-statement problem.
+          + MPI_RSEND workaround for cray/gemini performance.
+          + Add addtional supported decomposition for the tx0.1 resolution.
+          + Minor bugfix for potential problem in N_HEAT and N_SALT diagnostics 
+	    computation (there was no bug in the out-of-the-box configuration; only in 
+	    customized cases)
+          + Recharacterize some arrays in the ecosys_mod.F90 module as assumed-shape 
+	    arrays, in order to avoid Intel compiler problem.
+      o New POP2 FAQ
+
+  * Scripts
+      o Updated machines list. Added new machines (titan,olympus_pgi, olympus_intel,
+        janus) and deleted obsolete machines (prototype_columbia, midnight, hopp2, 
+	jaguar* (use titan instead))
+      o Change default DATM_CPL_CASE for I_1850_SPINUP_3HrWx_CN compset
+      o Change CLMQIAN directories for I compsets to under DIN_LOC_ROOT on all machines
+      o Bugfixes:
+          + Fix: compsets: E_2000_CN_GLC, E_1850_CN_GLC, F_AMIP_CAM5_CN, F_1850_CN_GLC 
+	    so CN is turned on as it should
+          + Fix: On machine Lynx env_build.xml and env_run.xml references to /ptmp 
+	    changed to /glade/scratch
+          + Fix: ESMF library path on bluefire no longer points to a temporary area. 
+	  
+  * Data Models
+      o Added support for interannual forcing (IAF) compsets.
+      o Update datm domain files for some grids with matching land/atm [T85_T85, T42_T42,
+        T31_T31, f10_f10, f45_45, f19_f19, f09_f09, f05_f05, and f02_f02 resolutions] 
+	(will change answers).
+      o Bugfixes:
+          + datm: dust bin 4 wet/dry deposition bug fix -- changes answers in cases with 
+	    datm dust.
+          + dice: bug fix for flux_Qacc -- changes answers for cases using C-type 
+	    compsets.
+
+  * csm_share Code
+      o Bugfixes:
+          + Minor Bugfix for using Gregorian input calendar
+          + Fix CF data string parsing bug for PGI 11.10
+
+================================================================================
+
+Tag name: cesm1_0_3
+Originator(s): cseg
+Date: Fri Jun 10 2011
+One-line Summary: Third update to the cesm1.0 release code.
+
+Answer-Changing Features in CESM1_0_3
+
+The following changes in the cesm1_0_3 tag will result in most cases not 
+producing bit-for-bit results when compared with cesm1_0_2.
+
+    * CAM (atm)
+          o Note that for scientifically supported compsets, all changes are 
+            climate preserving except for CAM5 compsets.
+          o Compsets: B_2000_CN_CHEM, B_1850_CN_CHEM, B_1850-2000_CN_CHEM and 
+            F_1850_CN_CHEM
+                + Climate-preserving changes: change horizontal interpolation 
+                  of input datasets to generalize for unstructured grids and 
+                  updates to dry deposition.
+                + Non-climate-preserving changes: correction to the wet 
+                  deposition list (include CH3OOH) and restore lightning NOx 
+                  production.
+          o Compset: B_2000_TROP_MOZART
+                + Climate-preserving changes: change horizontal interpolation of
+                  input datasets to generalize for unstructured grids and 
+                  updates to dry deposition.
+                + Non-climate-preserving changes: update trop_mozart with latest
+                  MOZART4 mechanism and include short wavelength photolysis in 
+                  tropospheric chemistry.
+          o Compsets: B_1850_WACCM, F_1850_WACCM and F_2000_WACCM
+                + Climate-preserving changes: change in the co2vmr surface value
+                  used in the nlte_fomichev, change horizontal interpolation of 
+                  input datasets to generalize for unstructured grids, WACCM 
+                  compsets changed to use 'xactive_lnd' method and corrected the
+                  reaction: O1D + CCL4 -> 4*CL for WACCM compsets.
+                + Non-climate-preserving changes: include CO2 reactions for 
+                  WACCM to improve concentrations in upper regions, new 
+                  treatment of stratospheric aerosols and correction to the wet
+                  deposition list (N2O5 removed from list).
+          o Compsets: B_1850_WACCM_CN (waccm_mozart_v1) and B_1850-2005_WACCM_CN
+            (waccm_mozart_v1)
+                + Climate-preserving changes: change in the co2vmr surface value
+                  used in the nlte_fomichev, change horizontal interpolation of
+                  input datasets to generalize for unstructured grids, WACCM 
+                  compsets changed to use 'xactive_lnd' method and corrected the
+                  reaction: O1D + CCL4 -> 4*CL for WACCM compsets. 
+          o New Compsets
+                + F_SD_CAMCHEM (trop_mozart), F_2000_TROP_MOZART (trop_mozart), 
+                  B_2000_WACCM_CN (waccm_mozart), B_1955-2005_WACCM_CN 
+                  (waccm_mozart_v1), B_RCP2.6_WACCM_CN (waccm_mozart_v1) 
+                  B_RCP4.5_WACCM_CN (waccm_mozart_v1), B_RCP8.5_WACCM_CN 
+                  (waccm_mozart_v1), F_1955-2005_WACCM_CN (waccm_mozart), 
+                  F_SD_WACCM (waccm_mozart), F_2000_WACCM_SC (waccm_ghg), 
+                  F_SD_BAM (trop_bam), F_TROP_STRAT_CHEM (trop_strat_bam_v1).
+
+    * CLM (lnd)
+          o Climate-preserving changes:
+                + Simulations at T31 for 1850 with the active-land model 
+                  (B,E,F, and I compsets) answers will be 
+                  greater-than-roundoff-level different from cesm1_0_2 solutions
+                  because of a new surface dataset and new initial conditions 
+                  that were added in. The new T31 surface dataset uses a new 
+                  glacier fraction dataset.
+                + Answers MAY be different to roundoff for non-transient 
+                  compsets because of the problem documented in the "List of 
+                  minor issues for CLM" given under Known Problems for 
+                  CESM1.0.2.
+                + SNOWLIQ and SNOWICE will be different on history files because
+                  of a change to the averaging of these fields. 
+          o Non-climate-preserving changes:
+                + None
+
+    * POP (ocn)
+          o Climate-preserving changes:
+                + In all cases using the active-ocean model (B,C, and G 
+                  compsets), answers will be greater-than-roundoff-level 
+                  different from cesm1_0_2 solutions, because single-precision 
+                  constants used in the overflows parameterization have been 
+                  changed to double precision in cesm1_0_3.
+                + In cases using the active-ocean ecosystem model (any compset 
+                  using OCN_TRACER_MODULES="ecosys"), under certain rare 
+                  conditions, solutions may not be bit-for-bit with those 
+                  generated from previous CESM1 release tags, due to the 
+                  improvements made in the robustness of the pH solver. Note 
+                  that the the carbonate diagnostics fields (CO3, HCO3, H2CO3) 
+                  will be slightly different from previous tags because the 
+                  phlo_3d_init value is different from the previous tags.
+          o Non-climate-preserving changes:
+                + None
+
+
+
+
+What's New in CESM1_0_3
+
+    * CAM (Active Atmosphere Model)
+          o Final bug fixes and tuning of CAM-FV w/ cam5 physics on 1 and 2 deg
+            grids.
+          o All new diagnostics that are being produced for the CESM AR5 
+            contributions are available in this release.
+          o Update the COSP implementation to work with the cam5 physics 
+            package.
+          o The "CAM3.1" physics package has been restored. Using the configure
+            argument "-phys cam3" now gives a physics package that matches what
+            was produced by the CAM3.1 model release. This is mainly useful in 
+            an aquaplanet configuration since the land component cannot be 
+            reverted to CLM3. To run an aquaplanet configuration that contains 
+            the customizations required by the intercomparison experiment 
+            protocol use the aquaplanet_cam3 use case (as an argument to 
+            build-namelist).
+          o Some tuning has been done to allow running the bulk aerosols with 
+            the cam5 physics package. Either prescribed bulk aerosols (as used 
+            by the cam4 physics package) or prognostic bulk aerosols (via -chem
+            trop_bam) can be used. The motivation was to provide a less 
+            expensive cam5 configuration which may be useful when modal 
+            aerosols are not the focus.
+          o The default for deposition velocity calculation is changed to be 
+            done in CLM except when modal aerosols are active. This changes 
+            answers (but not climate) for all prognostic chemistry schemes 
+            affected by dry deposition.
+          o Extend unstructured grid functionality to chemistry and cam5 physics
+            package (modal aerosols). Because the modal aerosols are doing a 
+            dry deposition calculation on the atm grid, a new dataset is 
+            required when running SE on the cubed sphere grid (see namelist 
+            variable drydep_srf_file).
+          o Changes to chemistry code:
+                + Provide more intuitive data-timing namelist variables. See, 
+                  for example, the new *_cycle_yr, *_fixed_ymd, *_fixed_tod 
+                  variables.
+                + Update trop_mozart with latest MOZART4 mechanism.
+                + Restore lighting NOx production in super_fast_llnl.
+                + Give flexibility to the units of the emissions datasets.
+                + Use more up-to-date dataset for waccm_ghg forcing.
+                + Include CO2 reactions for WACCM to improve concentrations in 
+                  upper regions
+                + Updates to dry deposition module.
+                + Provide an additional optional wet deposition method for gas 
+                  phase chemical species.
+                + Include short wavelength photolysis in tropospheric chemistry.
+                + New treatment of WACCM stratospheric aerosols.
+                + New chemistry package added : trop_strat_bam_v1.
+                + Adjustments to the trop_mozart chemistry mechanism.
+                + Provide dynamic creation of default deposition species lists 
+                  namelist settings using master lists.
+                + Correction to the wet deposition lists of species for 
+                  super_fast_llnl, and waccm_mozart.
+          o Add new low resolution FV grid: 2.5x3.33. The physics packages have
+            not been tuned at this resolution.
+          o Enable 1/4 deg FV cam5.
+          o Enable 1/8 deg SE cam4.
+          o Change default for number of vertical remappings per physics 
+            timestep. Was 1, but now set to 2 for 1/2 deg FV and finer grids. 
+            This changes answers for all high resolution (1/2 deg and finer) 
+            runs using FV dycore.
+          o Allow subcycling in Eulerian dycore. See namelist variable  
+            eul_nsplit.
+          o Add ability to interpolate fields on the SE grid (cubed sphere) to a
+            rectangular grid for history output. See namelist variables 
+            interpolate_analysis, interp_nlat, interp_nlon, interp_gridtype, and
+            interp_type. This is off by default.
+          o Option for history output to be averaged over local time zones. See
+            namelist variables lcltod_start and lcltod_stop.
+          o Option for history output (columns) along a specified track. See 
+            namelist variables sathist_track_infile, sathist_fincl, 
+            sathist_mfilt, and sathist_hfilename_spec.
+          o Option for history output of multiple single columns. The default is
+            for single column specifications to be output as separate variables.
+            This option allows all single columns specified in a history file to
+            be written as a single variable using the same format that is used 
+            to output unstructured grid data. The option is enabled by the new 
+            namelist variable collect_column_output. The reason for implementing
+            this option is for efficiency in writing single column output.
+          o An option was added to the COSP simulator to allow it to be run on a
+            subset of the timesteps when the radiation code is run. See the 
+            namelist variable cosp_nradsteps.
+          o Add argument to configure (-fc_type) to allow specifying which type
+            of Fortran compiler is being used when that compiler is being 
+            invoked via a generic script (e.g., mpif90 or ftn). This is only 
+            needed for CAM standalone builds.
+          o Add argument to build-namelist (-ntasks) to produce default FV 
+            decomposition settings (npr_yz). This functionality was previously 
+            embedded in the CESM scripts and was not available to user's of CAM
+            standalone scripts.
+          o Code cleanup and refactoring:
+                + Modify code to consistently save and reuse the physics buffer
+                  indicies rather than invoking a linear search for the indices
+                  wherever they are needed.
+                + Start refactoring modal_aer_opt module to make use of the
+                  rad_constituent interfaces. This will eventually provide a 
+                  prescribed modal aerosol capability and fully functioning 
+                  diagnostic calculations for radiative forcing.
+                + Implement separate drivers for the cam5 macrophysics and 
+                  microphysics. The driver for the cam4 macro/micro physics 
+                  remains in stratiform.F90.
+                + Remove unnecessary passed variables and use statements for the
+                  CAM5 cloud microphysics (cldwat2m_micro.F90)
+                + Add functionality for a logical flag called 'sub_column' to be
+                  passed to the CAM5 microphysics that changes how it works, but
+                  with the flag set (false) to reproduce the standard code 
+                  (cldwat2m_micro.F90)
+                + Refactoring in cam history to allow for extra dimensions in 
+                  output fields beyond the current spatial/temporal ones. 
+                  Previously the fields in a history file time sample only had 
+                  (lon,lat,lev,time) or (ncol,lev,time) dimensions. The "addfld"
+                  calls allowed lev to be set to 1, plev or plevp. To work 
+                  around this constraint in the past optional flags were added 
+                  to the addfld subroutine that allowed more values of lev, but
+                  this workaround did not provide extra dimensions. In cases 
+                  where multiple non-horizontal dimensions were needed, e.g., 
+                  level and optical depth, or level and subcolumn, the 
+                  technique employed was to combine multiple dimensions into a 
+                  single mixed dimension. We have eliminated the need to do that
+                  (in the output field only -- internal data structures still 
+                  require this mixed dimension). Optional arguments have been 
+                  added to the addfld subroutine which allow defining multiple 
+                  dimensions rather than just a single "lev" dimension.
+                + Add new namelist groups to the dycores. Continue to move 
+                  namelist variables out of the generic cam_inparm group.
+                + The old ISCCP simulator has been removed. The current ISCCP 
+                  simulator is available as part of the COSP package.
+
+    * CLM (Active Land Model) (See CLM User's Guide for details of all the 
+      following)
+          o Prognostic Crop model based on AGROIBIS added in:
+                + Add "-crop" option to configure (add with CLM_CONFIG_OPTS).
+                + Add surface datasets for crop mode for: f19, f10, 1x1_numaIA, 
+                  and 1x1_smallvilleIA (also crop datasets with crop AND 
+                  irrigation on).
+                + Add initial condition file for crop for f19
+                + New supported point resolutions for crop: 1x1_numaIA and 
+                  1x1_smallvilleIA
+                + Add raw vegetation and LAI datasets for use by mksurfdata for
+                 crop model for sim_year=2000.
+          o Irrigation Model added in:
+                + Add "-irrig" option to build-namelist (add with 
+                  CLM_BLDNML_OPTS).
+                + Add files for irrigation (for f09 and f10).
+          o Code cleanup and refactoring:
+                + Input and output files can be read/written in parallel using 
+                  PIO (Parallel Input/Output package).
+                + PIO is used for all Input/Output.
+                + Make restart history files NetCDF.
+                + Remove a list of old CPP defines, remove misc/preproc.h files.
+                + pft-physiology and RTM flow files are now both in NetCDF
+                + New precedence for build-namelist options is...
+                     1. Values set on the command-line using the -namelist 
+                        option (CLM_NAMELIST_OPTS).
+                     2. Values read from the file specified by -infile 
+                        (user_nl_clm file).
+                     3. Datasets from the -clm_usr_name option 
+                        (CLM_USRDAT_NAME).
+                     4. Values set from a use-case scenario, e.g., -use_case 
+                        (CLM_NML_USE_CASE).
+                     5. Values from the namelist defaults file.
+                + Now "co2_ppmv" only shows up in namelist -- if co2_type is 
+                  constant.
+                + Also "rtm_nsteps" only shows up in namelist if RTM is on.
+                + Now "build-namelist -list" options no longer require a 
+                  config_cache file to work.
+          o Changes to namelist:
+                + Remove Carbon_only and scaled_harvest options.
+                + Add suplnitro option which can be set to: NONE, 
+                  PROG_CROP_ONLY, or ALL.
+                + Remove old PIO namelist items, there's a new drv namelist to 
+                  control PIO for all components.
+          o New history output variables:
+            Add new variables: A5TMIN, A10TMIN, GDD0, GDD8, GDD10, GDD020, 
+            GDD820, GDD1020, GDDPLANT, GDDHARV, GDDTSOI, and QIRRIG. All but 
+            QIRRIG added for the crop model, QIRRIG added for irrigation model.
+          o Changes to boundary datasets:
+                + Update fraction, surface and domain file for urbanc_alpha 
+                  site.
+                + New finidat/fsurdat/fpftdyn files for T31.
+                + New grid/topo/frac/domain files for 2.5x3.33/T341.
+                + New datasets for use with the land-ice model.
+
+    * POP (Active Ocean Model)
+          o Improve robustness of ecosystem-model pH solver.
+          o Correct minor problems:
+                + netCDF metadata: correct IRON_FLUX units.
+                + netCDF metadata: add unlimited time dimension and cell_methods
+                  attribute to transport diagnostics.
+                + time management: correct time frequency options 'nsecond' and 
+                  'nhour'.
+                + diagnostics: correct minor memory leak.
+
+    * Driver
+          o Add vect_map namelist variable to provide more options for 
+            atmosphere to ocean vector mapping.
+          o Extend pio_inparm to provide namelist inputs for all components. 
+            Components now pick up the pio settings from the driver via the 
+            coupling interfaces.
+          o Add support for variable orbital years via namelist orb_mode. 
+            Controlled by env variables ORBITAL_MODE, ORBITAL_YEAR, and 
+            ORBITAL_YEAR_ALIGN.
+          o Extend calendar capabilities to better support gregorian calendars 
+            and to handle input data calendars better.
+
+    * Scripts (See CESM1.0 User's Guide for details of all the following)
+          o Add new scientifically supported compsets (see Scientific Supported
+            Model Configurations).
+          o Provide capability to run ultra-high resolution configuration 
+            (ne240np4_0.23x0.31_tx0.1v2, nominal 1/8 degree CAM-SE, 1/4 degree 
+            CLM, and 1/10 degree POP2/CICE).
+          o Add "append" option to xmlchange utility in $CASEROOT.
+          o Update ESMF default settings to ESMF_5_0_2.
+          o Add short-term archiving bug fixes for clm auxiliary files.
+          o Long term archiving changes
+                + new and more robust long-term archinving scripts 
+                  (lt_archive.pl)
+                + changes to NCAR archiving to remove MSS and add HPSS
+          o Summary of xml variables changes in $CASEROOT:
+          o Remove the following xml variables:
+                 env_build.xml: HIRES 
+                 env_run.xml: NPFIX 
+          o Add env_conf.xml variables to enable new DATM mode CPLHIST3HrWx.
+                 DATM_CPL_CASE, DATM_CPL_YR_ALIGN, DATM_CPL_YR_START, 
+                 DATM_CPL_YR_END 
+          o Add env_run.xml variable to enable run-time changes to orbital 
+            values.
+                 ORBITAL_MODE, ORBITAL_YEAR, ORBITAL_YEAR_ALIGN 
+          o Add env_run.xml variable to specify vectory mapping types.
+                 VECT_MAP  
+          o Add env_runl.xml variables for enabling pio settings to be done in 
+            driver.
+                 PIO_ASYNC_INTERFACE, PIO_STRIDE,PIO_ROOT, PIO_NUMTASKS,
+                 PIO_TYPENAME, PIO_DEBUG_LEVEL 
+                 OCN_PIO_STRIDE, OCN_PIO_ROOT, OCN_PIO_NUMTASKS, OCN_PIO_TYPENAME
+                 LND_PIO_STRIDE, LND_PIO_ROOT, LND_PIO_NUMTASKS, LND_PIO_TYPENAME
+                 ICE_PIO_STRIDE, ICE_PIO_ROOT, ICE_PIO_NUMTASKS, ICE_PIO_TYPENAME
+                 ATM_PIO_STRIDE, ATM_PIO_ROOT, ATM_PIO_NUMTASKS, ATM_PIO_TYPENAME
+                 CPL_PIO_STRIDE, CPL_PIO_ROOT, CPL_PIO_NUMTASKS, CPL_PIO_TYPENAME
+                 GLC_PIO_STRIDE, GLC_PIO_ROOT, GLC_PIO_NUMTASKS, GLC_PIO_TYPENAME
+          o Add other miscellaneous variables.
+                 COMP_RUN_BARRIERS (env_run.xml) 
+                 DOUT_L_HPSS_ACCNT (NCAR specific) (env_run.xml)
+                 GMAKE (env_build.xml)
+                 SAVE_TIMING (env_run.xml) 
+                 START_TOD (env_run.xml) 
+          o Add new component sets:
+                + GLC
+                       B_1850_CN_GLC, B_1850-2000_CN_GLC, B_2000_CN_GLC 
+                       B_RCP8.5_CN_GLC, B_RCP6.0_CN_GLC, B_RCP4.5_CN_GLC, 
+                       B_RCP2.6_CN_GLC 
+                       E_2000_CN_GLC, E_1850_CN_GLC 
+                       F_1850_CN_GLC, F_2000_CN_GLC, F_1850-2000_CN_GLC
+                       I_1850_GLC, I_1850-2000_GLC, I_2000_CN_GLC, 
+                       I_1850_CN_GLC, I_1850-2000_CN_GLC 
+                       I_RCP8.5_CN_GLC, I_RCP6.0_CN_GLC, I_RCP4.5_CN_GLC, 
+                       I_RCP2.6_CN_GLC 
+                + CAM/CAM5
+                       B_1850_CAM5_CN 
+                       B_1850-2000_CAM5_CN 
+                       F_1850_CAM5, F_AMIP_CAM5_CN, E_1850_CAM5_CN 
+                + CAM/Chemistry
+                       F_2000_TROP_MOZART 
+                       F_1850_chem, F_2000_chem 
+                       F_TROP_STRAT_CHEM, F_SD_CAMCHEM 
+                + CAM/WACCM
+                       B_2000_WACCM_CN 
+                       B_RCP2.6_WACCM_CN, B_RCP4.5_WACCM_CN, B_RCP8.5_WACCM_CN 
+                       B_RCP8.5_CN, B_RCP6.0_CN, B_RCP2.6_CN 
+                       F_1955-2005_WACCM_CN, F_SD_WACCM, F_2000_WACCM_SC 
+                + CAM/Other
+                       F_SD_BAM 
+                + CLM "stand-alone
+                       I_TEST_2003, I_TEST_2003_CN, I_1850_SPINUP_3HrWx_CN 
+                       I_RCP8.5_CN, I_RCP6.0_CN, I_RCP4.5_CN, I_RCP2.6_CN 
+          o Model Grid Changes
+                + Add new atmosphere grids.
+                       2.5x3.33 (nx=108 ny=72) 
+                       512x1024 (nx=1024   ny=512) 
+                       ne120np4 (nx=777602 ny=1 
+                + Add new model grids.
+                       2.5x3.33_2.5x3.33 
+                       ne30np4_0.9x1.25_gx1v6
+                       ne240np4_0.23x0.31_tx0.1v2 
+                       T85_0.9x1.25_gx1v6 
+                       T85_0.9x1.25_tx0.1v2
+                       T341_0.23x0.31_tx0.1v2
+                       ne120np4_0.9x1.25_gx1v6
+                       ne120np4_0.23x0.31_tx0.1v2 
+                       T341_T341 
+          o Machine Changes
+                + Add generic_darwin_pgi, generic_darwin_intel.
+                + Add lynx_pathscale.
+                + Add machine chester (ORNL XT5, OS/CNL, 12 pes/node).
+                + Update config_pes.xml for new resolutions, compsets, etc.
+          o Build Changes
+                + Remove all USER_xxx variables other than USER_CPPDEFS (e.g. 
+                  USER_FC, etc.) from Macros.machines files.
+                + Add more consistent usage for MPI_SERIAL option.
+
+    * Data Models
+          o Get pio setup parameters from coupling interface instead of 
+            namelist.
+          o Extend calendar capabilities to better support gregorian calendars.
+          o Migrate away from shared fields indices for coupling fields.
+          o Modify interpolation settings for CLM1PT mode in datm.
+          o Fix vapor pressure calculation for air density for CLMNCEP model in
+            datm.
+
+    * csm_share Code
+          o Update calendar capabilities to better support gregorian calendars 
+            as well as calendars in input datasets.
+          o Modify time interpolation methods to avoid integer overflows.
+          o Extend coszen time interpolation.
+          o Add PIO to single column mode.
+
+================================================================================
+
+Tag name: cesm1_0_2
+Originator(s): cseg
+Date: Fri Dec 03 2010
+One-line Summary: Second update to the cesm1.0 release code.
+
+#  known answer changes
+
+    * All FV runs at 1/2 deg and higher resolution change beyond roundoff due 
+	to a change in the FV div4 filter.
+    * All WACCM and trop_mozart runs change beyond roundoff due to changes in 
+	the lower boundary files for GHGs.
+    * All historical runs with cam5 physics change answers beyond roundoff due 
+	to updating the prescribed GHG dataset to the AR5 version.
+    * All Eulerian T31 runs change beyond roundoff due to tuning parameter 
+	changes.
+    * All runs with cam5 physics at resolutions different than 1.9x2.5 change 
+	answers beyond roundoff due to changes in default tuning parameters.
+    * All C- and G-compset cases will be different because of the correction 
+	to the application of the evaporation-precipitaion factor to both 
+	runoff and precipitation fields (cpl bugfix).
+    * All 2000 compsets will be differenct, because CCSM_CO2_PPMV was changed 
+	to 367.0 in these compsets.
+
+# atmosphere/CAM
+
+    * Tuning mods for Eulerian T31 resolution used in paleoclimate simulations.
+    * Fix for the FV div4 filter. This filter is only turned on by default for 
+	1/2 deg and higher resolution grids, so this change only affects 
+	answers for those resolutions.
+    * Set the lower boundary values of GHGs using the WACCM lower boundary file 
+	for all prognostic GHG chemistry schemes. This changes answers beyond 
+	roundoff for WACCM runs and for trop_mozart. It doesn't affect 
+	trop_mam3 or the superfast_chem schemes.
+    * Fix to column pairing algorithm in phys_grid. The bug would cause load 
+	balance problems, but not affect answers.
+    * Fix the prescribed GHG dataset for cam5 use case. Enables historical run 
+	to go through the end of 2005. This changes answers beyond roundoff for 
+	cam5 historical runs.
+    * Include workaround for slow compilations with the intel compiler.
+    * Corrected the default settings for cam5 simulations at resolutions other 
+	than 1.9x2.5. This changes answers beyond roundoff for all cam5 
+	simulations except those done at 1.9x2.5.
+
+# land/CLM
+
+    * Add a new initial condition file for T31 support.
+    * Turn ice_runoff to off for T31.
+    * Add ndepmapalgo to namelist:
+          o ndepmapalgo = Mapping method from Nitrogen deposition input file 
+	to the model resolution. The mapping method can be bilinear,nn,nnoni,
+	nnonj,spval,copy; the default is bilinear.
+    * Add U10 field to driver and history files (for dust, old U10 field 
+	renamed to U10_DUST).
+    * Add new single point options for mksurfdata (to override vegetation and 
+	soil types).
+    * Change some configure options, add -sitespf_pt option to setup urban 
+	test sites correctly.
+
+# ice/CICE
+
+    * Parameters for the low-resolution (gx3v7) ice model have been modified, 
+	and solutions produced with these settings have been scientifically 
+	validated.
+
+# ocn/POP2
+
+    * Parameters for the low-resolution (gx3v7) ocean model are scientifically 
+	valid.
+    * Minor improvements have been made to POP2 netCDF tavg history fields.
+
+# driver
+
+    * In previous versions, the epbal factor (when activated) was applied to 
+	precip, but not runoff. In the cesm1_0_2 release, this problem has 
+	been corrected: the epbal factor is now applied to runoff, too.
+
+# share code
+
+    * A workaround for the shr_scam_mod.F90 build issue has been implemented.
+
+# scripts
+
+    * Added support for T31_g37.
+    * Moved ${COMP}_NCPL to env_conf.xml.
+    * Added START_TOD to env_run.xml.
+    * Updated library module to allow CESM1 to build on kraken.
+    * Set CCSM_CO2_PPMV for all 2000 compsets to 367.0, which changes answers.
+    * Parallelized the archiving scripts for faster turnaround of archiving 
+	tasks.
+
+# data, dead, and stub models
+
+    * The stub and dead models are unchanged.
+    * The dlnd and docn models are unchanged.
+    * The datm and dice models were updated for compatability with share code. 
+	
+================================================================================
+
+Tag name: cesm1_0_1
+Originator(s): cseg
+Date: Fri Sep 17 2010
+One-line Summary: First update to the cesm1.0 release code.
+
+#  known answer changes
+    * WACCM F compset bug fix changes answers.
+    * CAM5 update changes answers.
+    * New default processor layout on bluefire for 1 degree B compsets changes 
+	answers.
+    * FV filter change in CAM for high resolution grids (1/2 degree and finer) 
+	changes answers.
+
+# atmosphere/CAM
+    * Add namelist specifier for which history file to write heat/moisture 
+	budget terms to.
+    * Separate aerosol activation code from microphysics code. (code cleanup; 
+	introduces roundoff diffs in cam5 on some platforms)
+    * Fix FV offline driver for 2D decomp and WACCM configs; fix configure to 
+	allow chem customization w/ trop_bam and *_ghg.
+    * Rename of types for import/export states (code cleanup).
+    * Add ability to read FAA aircraft emissions w/ conservative interpolation.
+    * Fix memory leak with workaround for xlf compiler bug.
+    * FV memory optimization; repro_sum update; spmd_utils and mod_comm 
+	communication protocol updates.
+    * Change FV filter defaults for high resolution grids (1/2 degree and finer). 
+	This changes answers in high res runs.
+
+# land/CLM
+    * Updates to CLM include various small fixes for CLM single-point mode and 
+	documentation updates. Updates to documentation included how to handle 
+	your data when using link_dirtree, and additional documentation and plots 
+	for the perturbation error growth method to validate a port to CLM.
+
+# ice/CICE
+    * No changes.
+
+# ocn/POP
+    * The units reported in the pop2 tavg output files for DON_prod are now 
+	correct.
+
+# driver
+    * Refactored the driver restart implementation to use only pio for reading 
+	and writing of all variables.
+    * Minor updates to the shr_esmf code to improve performance when esmf 
+	interfaces are used.
+
+# scripts
+    * Added support for edinburgh_pgi infiniband.
+    * Added support for lynx_pgi.
+    * Added support for pleiades [svn-ccsm-models.cgd.ucar.edu].
+    * Fixed co2_ppm value for FW and F1850W compsets, known problem.
+    * Fixed F_AMIP_CAM5 and F_1850_CN_CHEM compsets, known problem.
+    * Updates to intrepid compiler flags.
+    * Archiver fixes and enhancements.
+
+================================================================================
+Tag name: cesm1_0
+Originator(s): cseg
+Date: Fri Jun 25 2010
+One-line Summary: First released version of the cesm1.0 code.
+
+This tag is the first officially released version of the cesm1.0 code.
+Release tag cesm1_0 corresponds to internal release candidate cesm1_0_rel02.
+
+================================================================================

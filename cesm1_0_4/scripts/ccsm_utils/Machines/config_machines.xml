@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<config_machines>
+
+<machine MACH="graham"
+         DESC="Compute Canada Graham cluster - Intel and openmpi with slurm"
+         EXEROOT="/home/guido/scratch/cesmexe/$CASE"
+         OBJROOT="$EXEROOT"
+         LIBROOT="$EXEROOT/lib"
+         INCROOT="$EXEROOT/lib/include"
+         DIN_LOC_ROOT_CSMDATA="/home/guido/scratch/cesm/inputdata_guido"
+         DIN_LOC_ROOT_CLMQIAN="/home/guido/scratch/cesm/inputdata_guido/atm/datm7/atm_forcing.datm7.Qian.T62.c080727"
+         DOUT_S_ROOT="/home/guido/scratch/archive/$CASE"
+         DOUT_L_HTAR="TRUE"
+         DOUT_L_MSROOT="/home/guido/scratch/archive/$CASE"
+         CCSM_BASELINE="/home/guido/scratch/cesm"
+         CCSM_CPRNC="/data/home/guido/cesm/source/model_versions/cesm1_0_4/models/atm/cam/tools/cprnc/cprnc"
+         OS="Linux"
+         BATCHQUERY="squeue"
+         BATCHSUBMIT="sbatch"
+         GMAKE_J="12"
+         MAX_TASKS_PER_NODE="12"
+         MPISERIAL_SUPPORT="TRUE"/>
+
+</config_machines>

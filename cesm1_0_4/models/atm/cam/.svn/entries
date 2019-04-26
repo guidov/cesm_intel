@@ -1,0 +1,80 @@
+10
+
+dir
+92
+https://svn-ccsm-release.cgd.ucar.edu/model_versions/cesm1_0_4/models/atm/cam
+https://svn-ccsm-release.cgd.ucar.edu
+
+
+
+2012-02-14T17:10:09.055059Z
+92
+fischer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6ec7379f-1bbc-4938-b9b9-58fa9e6a5fe1
+
+chem_proc
+dir
+
+test
+dir
+
+tools
+dir
+
+bld
+dir
+
+SVN_EXTERNAL_DIRECTORIES
+file
+
+
+
+
+2012-02-21T20:31:53.358081Z
+d624b8dad707116875a41aa3d06c43a2
+2012-02-14T17:10:09.055059Z
+92
+fischer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+624
+
+doc
+dir
+
+src
+dir
+

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/usr_files
+END
+mkgriddata.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/usr_files/mkgriddata.TEMPLATE
+END
+mkdatadomain.TEMPLATE
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/92/model_versions/cesm1_0_4/scripts/ccsm_utils/Tools/lnd/clm/PTCLM/usr_files/mkdatadomain.TEMPLATE
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/src/physics/waccmx
+END
+ionosphere.F90
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/src/physics/waccmx/ionosphere.F90
+END
+majorsp_diffusion.F90
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/92/model_versions/cesm1_0_4/models/atm/cam/src/physics/waccmx/majorsp_diffusion.F90
+END
